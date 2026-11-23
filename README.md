@@ -19,18 +19,18 @@ is also in that icon's right-click menu.
 | Warm tint | A separate warm layer with its own color and strength. Stacks with dimming or runs alone. Its strength stays visible in the panel while the tint is off. |
 | All displays or one | Dim every monitor or only the primary. Each monitor gets its own layer, so adding or removing one doesn't break it. |
 | Out of captures | Screenshots, recordings and screen sharing stay at normal brightness. Overlay method only. |
-| Dimmed pointer | Off by default. Windows draws the pointer above every window, so under the overlay it is swapped for a darkened copy while dimming is on, and put back when it stops. |
+| Dimmed pointer | Off by default. Windows draws the pointer above every window, so under the overlay it is swapped for a darkened copy while dimming is on, and the user's own scheme is reloaded when it stops - or at the next start, if the process never got that far. |
 | Fluent panel | Per-pixel surface, Segoe UI Variable and Segoe Fluent Icons, Windows' theme and accent or ones you pin yourself. |
 | Tray icon | Click to open or close the panel, right-click for the controls. The tooltip shows the levels. Redrawn in your accent, and put back if Explorer restarts. |
 | Hotkeys | Open the panel, toggle the dim, toggle the tint, dim more, dim less. Every chord can be changed or cleared. |
-| Remembers | Levels, toggles, method and display choice survive a restart. |
+| Remembers | Levels, toggles, method and display choice survive a restart. The method and display picked in the panel are kept beside the setting they replaced, so changing that setting in Windhawk wins them back. |
 
 ## Settings
 
 | Setting | Default | Notes |
 | --- | --- | --- |
 | Start with extra dim on | Off | Applies the start level as soon as the mod loads. |
-| Extra dim level on start | 40% | Also the level the toggle restores. |
+| Extra dim level on start | 40% | Applied when the mod loads. Also the level the slider starts from. |
 | Remember changes | On | When off, the startup values win every time. |
 | Theme | Follow Windows | Or force Light or Dark. |
 | Accent color | Windows accent | Nine presets, or a color of your own. |
@@ -41,7 +41,6 @@ is also in that icon's right-click menu.
 | Horizontal / vertical offset | 0 px | Fine placement. |
 | Close when the panel loses focus | On | Behaves like a shell flyout. |
 | Show a tray icon | On | Keeps the notification-area icon while the mod is loaded. |
-| Default dim level | 40% | What the Extra dim toggle restores. |
 | Step | 10% | One wheel notch, arrow key or hotkey press. |
 | Maximum dim level | 90% | Ceiling for the slider. At 100% the screen is nearly black. |
 | Dimming method | Overlay | Overlay or Gamma; the Displays card can change it too. |
@@ -52,7 +51,7 @@ is also in that icon's right-click menu.
 | Dim the mouse pointer too | Off | Overlay method only; Gamma dims the pointer already. The system cursors are swapped while dimming is on. |
 | Warm tint color | `#FFB56B` | Color of the warm layer. |
 | Starting tint strength | 0% | What the Warm tint toggle restores. |
-| Shortcuts | `ctrl+alt+shift+d`, `ctrl+alt+d`, `ctrl+alt+t`, `ctrl+alt+up`, `ctrl+alt+down` | Written the way they're pressed. Empty disables one. A chord needs Ctrl, Alt, Shift or Win; a lone key is ignored unless it's an F-key. |
+| Shortcuts | `ctrl+alt+shift+d`, `ctrl+alt+d`, `ctrl+alt+t`, `ctrl+alt+shift+up`, `ctrl+alt+shift+down` | Written the way they're pressed. Empty disables one. A chord needs Ctrl, Alt, Shift or Win; a lone key is ignored unless it's an F-key. |
 
 ## Requirements
 
@@ -79,9 +78,17 @@ Explorer. Nothing here can take the shell down.
   in the panel asks the driver again.
 - **The secure desktop stays bright.** Windows doesn't run third-party windows on
   the UAC prompt or the sign-in screen.
-- **Pointer dimming swaps the system cursors.** If the process is killed rather
-  than unloaded, they stay dark until you sign out or pick a cursor scheme in
-  Mouse settings. That's why the option is off by default.
+- **Some shell UI stays bright.** The layer sits with ordinary topmost windows, so
+  anything Windows raises above them - the Alt+Tab switcher, flyouts that go
+  topmost - is not covered. Gamma reaches those, because it dims the scanout
+  rather than the desktop.
+- **Gamma looks lighter.** Drivers limit how far the ramp may go, so at the same
+  percentage gamma is brighter than the overlay. The two look most alike at low
+  levels and drift apart as the level rises.
+- **Pointer dimming swaps the system cursors.** That is a session-wide change, so
+  the option is off by default. A run that ends without its shutdown leaves the
+  swap behind, and the next start puts the user's own scheme back before anything
+  else.
 
 ## How it works
 
@@ -93,18 +100,27 @@ Explorer. Nothing here can take the shell down.
   per display, filled with a single color and given a single alpha, re-raised by
   a slow watchdog.
 - **Gamma** - a DC per display, the current ramp saved, and exactly that ramp put
-  back on the way out, so a calibrated display returns as it was.
+  back on the way out, so a calibrated display returns as it was. The saved copy
+  also goes to storage: a run that dies with a ramp applied is undone by the next
+  one before it takes its own copy, so ramps can't stack.
 - **Tint** - its own layered window with its own color and strength.
 - **Pointer** - each system cursor is rebuilt by hand from its own color and mask
   bitmaps, darkened by the same amount as the layer, then swapped in; gamma needs
-  none of it, because the pointer rides on the scanout.
+  none of it, because the pointer rides on the scanout. Undoing a swap reloads the
+  user's cursor scheme, which brings back animated and multi-size cursors too.
 - **Tray icon** - drawn with GDI at four times the size and averaged down, which
   antialiases it and gives the shell the coverage a 32-bit icon expects.
+- **Shutdown** - the screen and the pointer are handed back first, then the tray
+  icon is removed, because the tray call is cross-process and can stall against a
+  busy Explorer. Sign-out is handled the same way, through `WM_ENDSESSION`.
 
 ## State
 
-`HKCU\Software\DpakB\ExtraDim`, and nothing else. The mod doesn't read or write
-Windows' Night light setting, and sends nothing anywhere.
+The mod's own Windhawk storage, one set per user account: the levels and toggles,
+and - only while they are in use - the panel's method and display choice, a copy
+of each display's original gamma ramp, and a flag saying the pointer is swapped.
+Nothing else. The mod doesn't read or write Windows' Night light setting, and
+sends nothing anywhere.
 
 ## License
 

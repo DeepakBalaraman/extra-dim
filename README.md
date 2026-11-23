@@ -22,7 +22,7 @@ is also in that icon's right-click menu.
 | Dimmed pointer | Off by default. Windows draws the pointer above every window, so under the overlay it is swapped for a darkened copy while dimming is on, and the user's own scheme is reloaded when it stops - or at the next start, if the process never got that far. |
 | Fluent panel | Per-pixel surface, Segoe UI Variable and Segoe Fluent Icons, Windows' theme and accent or ones you pin yourself. |
 | Tray icon | Click to open or close the panel, right-click for the controls. The tooltip shows the levels. Redrawn in your accent, and put back if Explorer restarts. |
-| Hotkeys | Open the panel, toggle the dim, toggle the tint, dim more, dim less. Every chord can be changed or cleared. |
+| Hotkeys | Open the panel, toggle the dim and toggle the tint out of the box; optional chords for dim more and dim less. Every chord can be changed or cleared. |
 | Remembers | Levels, toggles, method and display choice survive a restart. The method and display picked in the panel are kept beside the setting they replaced, so changing that setting in Windhawk wins them back. |
 
 ## Settings
@@ -51,7 +51,7 @@ is also in that icon's right-click menu.
 | Dim the mouse pointer too | Off | Overlay method only; Gamma dims the pointer already. The system cursors are swapped while dimming is on. |
 | Warm tint color | `#FFB56B` | Color of the warm layer. |
 | Starting tint strength | 0% | What the Warm tint toggle restores. |
-| Shortcuts | `ctrl+alt+shift+d`, `ctrl+alt+d`, `ctrl+alt+t`, `ctrl+alt+shift+up`, `ctrl+alt+shift+down` | Written the way they're pressed. Empty disables one. A chord needs Ctrl, Alt, Shift or Win; a lone key is ignored unless it's an F-key. |
+| Shortcuts | `ctrl+alt+shift+d`, `ctrl+alt+d`, `ctrl+alt+t`; dim more / dim less empty | Written the way they're pressed. Empty disables one. Dim more and dim less start unbound so no chord is taken from another program; the panel, the tray menu and the wheel change the level. A chord needs Ctrl, Alt, Shift or Win; a lone key is ignored unless it's an F-key. |
 
 ## Requirements
 
